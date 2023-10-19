@@ -1,0 +1,257 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cadastro e Lista de Rotas de Entrega</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/extra.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link data-n-head="ssr" rel="icon" type="image/png" size="32" data-hid="favicon-32" href="https://maxst.icons8.com/vue-static/icon/favicon/icons8_fav_32×32.png" /> <!-- Inclua o CSS do Bootstrap -->
+  </head>
+  <body id="body-pd">
+    <header class="header" id="header">
+      <div class="header_toggle">
+        <i class="bx bx-menu" id="header-toggle"></i>
+      </div>
+      <div class="header_img">
+        <img src="https://i.imgur.com/hczKIze.jpg" alt="" />
+      </div>
+    </header>
+    <div class="l-navbar" id="nav-bar">
+      <nav class="nav">
+        <div>
+          <a href="#" class="nav_logo"><i class="bx bx-layer nav_logo-icon"></i> <span class="nav_logo-name">Atual Água e Gás</span></a>
+          <div class="nav_list">
+            <a href="{% url 'stock-list' %}" class="nav_link active">
+              <i class="bx bx-grid-alt nav_icon"></i>
+              <span class="nav_name">Dashboard</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class="bx bx-user nav_icon"></i>
+              <span class="nav_name">Users</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class="bx bx-message-square-detail nav_icon"></i>
+              <span class="nav_name">Messages</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class="bx bx-bookmark nav_icon"></i>
+              <span class="nav_name">Bookmark</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class="bx bx-folder nav_icon"></i>
+              <span class="nav_name">Files</span>
+            </a>
+            <a href="#" class="nav_link"><i class="bx bx-bar-chart-alt-2 nav_icon"></i> <span class="nav_name">Stats</span></a>
+          </div>
+        </div> <a href="#" class="nav_link"><i class="bx bx-log-out nav_icon"></i> <span class="nav_name">SignOut</span></a>
+      </nav>
+    </div>
+    <div class="height-100 bg-light">
+      <h4>Main Components</h4>
+      <h1 class="mt-5">Cadastro de Rota de Entrega</h1>
+      <form method="post" id="route-form">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="id_pedido" class="form-label">Pedido</label>
+          <select name="pedido" class="form-select" id="id_pedido">
+            <option value="">Selecione um pedido</option>
+            {% for product in products %}
+              <option value="{{ product.nome }}">{{ product.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label for="id_qtd" class="form-label">Quantidade</label>
+          <input type="number" name="qtd" class="form-control" id="id_qtd" />
+        </div>
+        <div class="mb-3">
+          <label for="id_destination" class="form-label">Destino</label>
+          <input type="text" name="destination" class="form-control" id="id_destination" />
+        </div>
+
+        <div class="mb-3">
+          <label for="id_client_name" class="form-label">Nome do Cliente</label>
+          <input type="text" name="client_name" class="form-control" id="id_client_name" />
+        </div>
+
+        <div class="mb-3">
+          <label for="id_client_phone" class="form-label">Telefone do Cliente</label>
+          <input type="text" name="client_phone" class="form-control" id="id_client_phone" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Cadastrar Rota</button>
+      </form>
+      <h1 class="mt-5">Lista de Rotas de Entrega</h1>
+      <table class="table" id="routes-table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Destino</th>
+            <th>Quantidade</th>
+            <th>Nome do Cliente</th>
+            <th>Telefone do Cliente</th>
+            <th>Status</th> <!-- Adicionando uma coluna para exibir o status -->
+            <th>Ação</th> <!-- Coluna de ação -->
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+            <a type="button" class="btn btn-outline-secondary" data-dismiss="modal" id="cancelDelete"><i class="fas fa-times"></i> <!-- Substitua "fa-times" pelo ícone que deseja usar --></a>
+          </div>
+          <div class="modal-body">
+            <p>
+              <strong>Pedido:</strong> <span></span>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelDelete">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmDelete">Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/dist/boxicons.min.js"></script>
+    <script src="{% static 'js/scriptheader.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  </body>
+  <script>
+    $(document).ready(function () {
+      // Função para atualizar a tabela de rotas
+      function confirmDelivery(routeId) {
+        $.post('/mark_delivered/' + routeId + '/', { csrfmiddlewaretoken: '{{ csrf_token }}' }, function (response) {
+          if (response.success) {
+            // Você pode realizar outras ações após a marcação como entregue
+            if (response.success) {
+              // Atualize a tabela ou realize outras ações de acordo com sua necessidade
+              updateRouteTable()
+            } else {
+              // Lide com erros ou apresente mensagens de feedback, se necessário
+            }
+          }
+        })
+      }
+    
+      function updateRouteTable() {
+        $.get("{% url 'listar-route' %}", function (data) {
+          // Limpe o conteúdo da tabela
+          var tableBody = $('#routes-table tbody')
+          tableBody.empty()
+    
+          // Percorra os dados e adicione linhas à tabela
+          $.each(data.routes, function (index, route) {
+            var row = '<tr><td>' + route.pedido + '</td><td>' + route.destination + '</td><td>' + route.qtd + '</td><td>' + route.client_name + '</td><td>' + route.client_phone + '</td>' + '<td class="' + route.status.toLowerCase() + '">' + route.status + '</td>'
+            row += '<td>'
+            // Adicionar ícone de lápis (para edição)
+            row += '<a href="#" style="margin-right: 10px;"><i class="fas fa-pencil-alt text-warning"></i></a>'
+            row += '<a href="#" style="margin-right: 10px;" class="confirm-item" data-item-id="' + route.id + '" data-item-pedido="' + route.pedido + '" title="Confirmar entrega nessa rota?"><i class="fas fa-check text-success"></i></a>'
+            // Adicionar ícone de lixeira (para exclusão)
+            row += '<a href="#" class="delete-item" data-item-id="' + route.id + '" data-item-pedido="' + route.pedido + '" title="Deletar entrega nessa rota?"><i class="fas fa-trash text-danger"></i></a>'
+    
+            row += '</td></tr>'
+            tableBody.append(row)
+          })
+        })
+    
+        // Lidar com a exclusão de itens quando o usuário clicar no ícone de lixeira
+        $('#routes-table').on('click', '.delete-item', function (e) {
+          e.preventDefault()
+          var itemID = $(this).data('item-id')
+          // Abra o modal de confirmação
+          var itemPedido = $(this).data('item-pedido')
+    
+          // Atualizar o conteúdo do modal com os dados da rota
+          $('#deleteModal').find('.modal-body strong').text('Tem certeza de que deseja excluir este Pedido?')
+          $('#deleteModal')
+            .find('.modal-body span')
+            .html('<br>' + itemID + ' - ' + itemPedido)
+    
+          $('#deleteModal').modal('show')
+    
+          // Lidar com a exclusão após a confirmação
+          $('#confirmDelete').on('click', function () {
+            $.ajax({
+              url: '/delete/' + itemID + '/', // Rota de exclusão
+              type: 'POST',
+              data: { csrfmiddlewaretoken: '{{ csrf_token }}' }, // Para proteção CSRF no Django
+              success: function (response) {
+                // Feche o modal
+                $('#deleteModal').modal('hide')
+                // Atualize a tabela após a exclusão
+                updateRouteTable()
+              },
+              error: function (error) {
+                console.log(error)
+                // Feche o modal em caso de erro
+                $('#deleteModal').modal('hide')
+              }
+            })
+          })
+    
+          // Lidar com o fechamento do modal ao clicar em "Cancelar" ou fora do modal
+          $('#cancelDelete').on('click', function () {
+            // Este console.log irá verificar se o evento está sendo chamado corretamente
+            console.log("Botão 'Cancelar' clicado")
+            // Feche o modal
+            $('#deleteModal').modal('hide')
+          })
+    
+          $('#deleteModal').on('hidden.bs.modal', function () {
+            // Lidar com o modal fechado
+            // Limpe os eventos para evitar comportamento duplicado
+            $('#confirmDelete').off('click')
+            $('#cancelDelete').off('click')
+          })
+        })
+    
+        // Lidar com a confirmação de itens quando o usuário clicar no ícone de verificação (✓)
+        $('#routes-table').on('click', '.confirm-item', function (e) {
+          e.preventDefault()
+          var itemID = $(this).data('item-id')
+          // Chame a função para confirmar a entrega aqui
+          confirmDelivery(itemID)
+        })
+      }
+      function adicionarMascaraTelefone(telefoneInput) {
+        telefoneInput.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, ''); // Remova caracteres não numéricos
+    
+            if (value.length > 11) {
+                // Limite o comprimento a 11 dígitos (incluindo números e caracteres especiais)
+                value = value.substring(0, 11);
+            }
+    
+            if (value.length <= 10) {
+                this.value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+            } else {
+                this.value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            }
+        });
+    }
+    
+    
+    
+    
+      // Exemplo de uso:
+      const inputTelefone = document.getElementById('id_client_phone')
+      adicionarMascaraTelefone(inputTelefone)
+      // Atualize a tabela quando a página carregar
+      updateRouteTable()
+    })
+  </script>
+</html>

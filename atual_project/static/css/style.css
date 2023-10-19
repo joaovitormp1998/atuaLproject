@@ -1,0 +1,15 @@
+body {
+background-color: purple;
+}
+/* Estilo para entregue */
+.entregue {
+    font-weight: bold;
+
+    color: green; /* Cor de texto verde */
+  }
+  
+  /* Estilo para pendente */
+  .pendente {
+    font-weight: bold;
+    color: orange; /* Cor de texto amarelo */
+  }
